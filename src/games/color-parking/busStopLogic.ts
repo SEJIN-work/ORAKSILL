@@ -22,18 +22,38 @@ export interface StageConfig {
 }
 
 /**
- * Difficulty table (PRD 7.2): lanes / buses per lane / colors / seats grow per stage.
- * Tuned 2026-10-02 with player-model sims: casual ~99% → 27%, skilled ~100% → 67% (stage 1 → 8).
+ * Difficulty table (PRD 7.2), 24 stages: up to 7 lanes × 7 buses (49 buses, ~290 passengers),
+ * 8 colours. Bigger boards get a LOWER `bury` so they stay fair: with many buses the hard part
+ * becomes choosing WHICH same-coloured lane to pull (the bus behind it matters), not deep digs.
+ * Sim (`npm run sim:puzzles`, 2026-10-02): a player who looks at the next bus/queue ("average")
+ * 100% → ~60% (stage 9) → 20-33% (19-24); random lane choice drops to <10% late; skilled 2-ply
+ * look-ahead 100% → 50-67%. Max 8 colours (scene COLORS/SYMBOLS have 8 entries).
  */
 export const STAGES: StageConfig[] = [
   { lanes: 3, busesPerLane: 2, colors: 2, seats: 3, bury: 0.12 },
   { lanes: 3, busesPerLane: 3, colors: 3, seats: 3, bury: 0.12 },
   { lanes: 4, busesPerLane: 3, colors: 3, seats: 3, bury: 0.12 },
   { lanes: 4, busesPerLane: 3, colors: 4, seats: 3, bury: 0.12 },
-  { lanes: 4, busesPerLane: 4, colors: 4, seats: 4, bury: 0.12 },
-  { lanes: 5, busesPerLane: 4, colors: 4, seats: 4, bury: 0.12 },
-  { lanes: 5, busesPerLane: 4, colors: 5, seats: 4, bury: 0.1 },
-  { lanes: 5, busesPerLane: 5, colors: 5, seats: 4, bury: 0.1 },
+  { lanes: 4, busesPerLane: 4, colors: 4, seats: 4, bury: 0.1 },
+  { lanes: 5, busesPerLane: 4, colors: 4, seats: 4, bury: 0.08 },
+  { lanes: 5, busesPerLane: 4, colors: 5, seats: 4, bury: 0.08 },
+  { lanes: 5, busesPerLane: 5, colors: 5, seats: 4, bury: 0.06 },
+  { lanes: 5, busesPerLane: 5, colors: 5, seats: 5, bury: 0.06 },
+  { lanes: 6, busesPerLane: 5, colors: 5, seats: 4, bury: 0.05 },
+  { lanes: 6, busesPerLane: 5, colors: 6, seats: 4, bury: 0.05 },
+  { lanes: 6, busesPerLane: 5, colors: 6, seats: 5, bury: 0.04 },
+  { lanes: 6, busesPerLane: 6, colors: 6, seats: 4, bury: 0.03 },
+  { lanes: 6, busesPerLane: 6, colors: 6, seats: 5, bury: 0.03 },
+  { lanes: 6, busesPerLane: 6, colors: 7, seats: 4, bury: 0.03 },
+  { lanes: 7, busesPerLane: 6, colors: 7, seats: 4, bury: 0.02 },
+  { lanes: 7, busesPerLane: 6, colors: 7, seats: 5, bury: 0.02 },
+  { lanes: 7, busesPerLane: 6, colors: 7, seats: 6, bury: 0.02 },
+  { lanes: 7, busesPerLane: 7, colors: 7, seats: 4, bury: 0.01 },
+  { lanes: 7, busesPerLane: 7, colors: 7, seats: 5, bury: 0.01 },
+  { lanes: 7, busesPerLane: 7, colors: 8, seats: 4, bury: 0.01 },
+  { lanes: 7, busesPerLane: 7, colors: 8, seats: 5, bury: 0 },
+  { lanes: 7, busesPerLane: 7, colors: 8, seats: 6, bury: 0 },
+  { lanes: 7, busesPerLane: 7, colors: 8, seats: 6, bury: 0 },
 ]
 
 export interface Bus {

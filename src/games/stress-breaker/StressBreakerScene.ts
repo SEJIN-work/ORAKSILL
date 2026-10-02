@@ -6,7 +6,7 @@ import { banner, burst, confetti, flash, hitFlash, hitStop, isFrozen, popText, p
 import { emitResult, getInitData } from '../session.ts'
 import { displayText, drawBackdrop, drawHudBar, ensureGlowTexture, hex, NEON } from '../theme.ts'
 
-export const MAX_STAGE = 10
+export const MAX_STAGE = 30
 export const BOOSTER_SECONDS = 10
 
 interface StageConfig {
@@ -21,21 +21,23 @@ interface StageConfig {
 }
 
 /**
- * Difficulty (PRD 7.3): higher target, faster spawns, shorter lifetimes, bombs from stage 2,
- * 2-hit boxes from stage 3. Tuned 2026-10-02 with a human-model sim (casual player clears
- * 100%→32% across stages 1-10). Keep total spawns comfortably above `target`: the previous table
- * made stages 6-10 mathematically unwinnable (fewer objects spawned than the target).
+ * Difficulty (PRD 7.3), 30 stages on a smooth curve k = 0..1: higher target, faster spawns,
+ * shorter lifetimes, more bombs (from stage 2) and 2-hit crates (from stage 3). Tuned
+ * 2026-10-02 with `npm run sim:stress`: casual player 100% (1-10) → 90% (20) → 67% (25) → 23% (30),
+ * skilled ~99% throughout. Keep total spawns comfortably above `target` (supply-limited game).
+ * qa/sim-stress.mjs mirrors this function — update both together.
  */
 export function stageConfig(stage: number): StageConfig {
+  const k = (Math.min(stage, MAX_STAGE) - 1) / (MAX_STAGE - 1)
   return {
     time: 30,
-    target: Math.round(16 + stage * 3.3),
-    spawnMs: Math.max(410, 820 - stage * 41),
-    maxAlive: 4 + Math.ceil(stage / 2),
-    lifetimeMs: Math.max(1600, 2700 - stage * 100),
-    bombChance: stage >= 2 ? Math.min(0.17, 0.05 + stage * 0.013) : 0,
+    target: Math.round(18 + 32 * Math.pow(k, 0.75)),
+    spawnMs: Math.round(820 - 440 * k),
+    maxAlive: 4 + Math.round(7 * k),
+    lifetimeMs: Math.round(2700 - 1150 * k),
+    bombChance: stage >= 2 ? 0.05 + 0.13 * k : 0,
     bonusChance: 0.07,
-    toughChance: stage >= 3 ? Math.min(0.3, stage * 0.035) : 0,
+    toughChance: stage >= 3 ? 0.04 + 0.28 * k : 0,
   }
 }
 

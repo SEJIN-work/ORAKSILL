@@ -15,19 +15,36 @@ export interface StageConfig {
 }
 
 /**
- * Difficulty table (PRD 7.4): target value, board size and obstacle cells grow per stage.
- * Tuned 2026-10-02 with player-model sims: casual ~98% → 39%, every round ≤ ~2m40s
- * (targets capped at 256 — 512 took ~300 swipes, well past PRD's 3-minute round).
+ * Difficulty table (PRD 7.4), 24 stages: board size, target, obstacles and the move budget.
+ * Stages are ORDERED BY MEASURED DIFFICULTY (`npm run sim:puzzles`), not by any single knob —
+ * e.g. a 4×4→256 with no obstacles plays easier than a 5×5→256 with 3. Casual 98% → ~50% (mid)
+ * → 13% (24, the "boss" board); skilled 100% → 51%. Targets stay ≤256 so rounds stay ≤ ~2m45s.
  */
 export const STAGES: StageConfig[] = [
-  { size: 4, target: 64, moves: 70, obstacles: 0 },
-  { size: 4, target: 128, moves: 130, obstacles: 0 },
-  { size: 4, target: 128, moves: 125, obstacles: 1 },
-  { size: 5, target: 128, moves: 115, obstacles: 1 },
-  { size: 5, target: 256, moves: 215, obstacles: 1 },
+  { size: 4, target: 64, moves: 75, obstacles: 0 },
+  { size: 4, target: 128, moves: 135, obstacles: 0 },
+  { size: 4, target: 64, moves: 65, obstacles: 0 },
+  { size: 4, target: 128, moves: 125, obstacles: 0 },
+  { size: 5, target: 128, moves: 120, obstacles: 1 },
+  { size: 4, target: 64, moves: 60, obstacles: 1 },
+  { size: 5, target: 256, moves: 225, obstacles: 1 },
+  { size: 4, target: 128, moves: 120, obstacles: 1 },
+  { size: 4, target: 256, moves: 240, obstacles: 0 },
+  { size: 4, target: 256, moves: 230, obstacles: 0 },
+  { size: 5, target: 128, moves: 110, obstacles: 2 },
+  { size: 5, target: 256, moves: 215, obstacles: 2 },
   { size: 5, target: 256, moves: 210, obstacles: 2 },
-  { size: 5, target: 256, moves: 210, obstacles: 3 },
+  { size: 6, target: 256, moves: 215, obstacles: 3 },
+  { size: 5, target: 128, moves: 105, obstacles: 3 },
+  { size: 5, target: 256, moves: 205, obstacles: 3 },
+  { size: 5, target: 256, moves: 200, obstacles: 3 },
   { size: 6, target: 256, moves: 205, obstacles: 4 },
+  { size: 6, target: 256, moves: 200, obstacles: 5 },
+  { size: 5, target: 256, moves: 195, obstacles: 4 },
+  { size: 4, target: 256, moves: 225, obstacles: 1 },
+  { size: 5, target: 256, moves: 190, obstacles: 4 },
+  { size: 6, target: 256, moves: 190, obstacles: 5 },
+  { size: 6, target: 256, moves: 185, obstacles: 6 },
 ]
 
 export interface MergeEvent {

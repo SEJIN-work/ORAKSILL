@@ -5,16 +5,19 @@ import fs from 'node:fs'
 
 // MUST mirror StressBreakerScene.stageConfig() (the scene imports Phaser, so Node can't import it).
 // Update both together when re-tuning.
-const current = (stage) => ({
-  time: 30,
-  target: Math.round(16 + stage * 3.3),
-  spawnMs: Math.max(410, 820 - stage * 41),
-  maxAlive: 4 + Math.ceil(stage / 2),
-  lifetimeMs: Math.max(1600, 2700 - stage * 100),
-  bombChance: stage >= 2 ? Math.min(0.17, 0.05 + stage * 0.013) : 0,
-  bonusChance: 0.07,
-  toughChance: stage >= 3 ? Math.min(0.3, stage * 0.035) : 0,
-})
+const current = (stage) => {
+  const k = (stage - 1) / 29
+  return {
+    time: 30,
+    target: Math.round(18 + 32 * Math.pow(k, 0.75)),
+    spawnMs: Math.round(820 - 440 * k),
+    maxAlive: 4 + Math.round(7 * k),
+    lifetimeMs: Math.round(2700 - 1150 * k),
+    bombChance: stage >= 2 ? 0.05 + 0.13 * k : 0,
+    bonusChance: 0.07,
+    toughChance: stage >= 3 ? 0.04 + 0.28 * k : 0,
+  }
+}
 /** 3★ rule in the scene: ≥20% of the time limit left. */
 const THREE_STAR = 0.2
 const table = process.argv[2] ? JSON.parse(fs.readFileSync(process.argv[2], 'utf8')) : null
@@ -70,9 +73,12 @@ function run(cfg, p, booster = 0) {
   return { cleared: false, t: limit, left: 0 }
 }
 
-const N = 1500
+const N = Number(process.env.N ?? 1500)
+const MAX_STAGES = 30
+const ONLY = process.env.STAGES ? process.env.STAGES.split(",").map(Number) : null
 const rows = []
-for (let s = 1; s <= 10; s++) {
+for (let s = 1; s <= (table ? table.length : MAX_STAGES); s++) {
+  if (ONLY && !ONLY.includes(s)) continue
   const cfg = cfgFor(s)
   const supply = Math.round(((cfg.time * 1000) / cfg.spawnMs + 3) * (1 - cfg.bombChance))
   const row = { stage: s, target: cfg.target, time: cfg.time, supply }

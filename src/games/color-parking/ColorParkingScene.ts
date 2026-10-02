@@ -21,9 +21,9 @@ import {
 
 export const MAX_STAGE = STAGES.length
 
-const COLORS = [0xff4d6d, 0x3d8bff, 0x3ddc84, 0xffd23f, 0xb06dff, 0xff8c3d]
+const COLORS = [0xff4d6d, 0x3d8bff, 0x3ddc84, 0xffd23f, 0xb06dff, 0xff8c3d, 0x2ee6e6, 0xff7ad9]
 /** Colour-independent symbols so colour-blind players can match too (PRD 11). */
-const SYMBOLS = ['●', '▲', '■', '◆', '★', '✚']
+const SYMBOLS = ['●', '▲', '■', '◆', '★', '✚', '♥', '♣']
 
 const HUD_H = 100
 const QUEUE_Y = 196

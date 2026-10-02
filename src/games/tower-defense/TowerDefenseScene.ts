@@ -6,17 +6,31 @@ import { banner, burst, confetti, flash, hitFlash, hitStop, isFrozen, popText, p
 import { emitResult, getInitData } from '../session.ts'
 import { bake, bodyText, displayText, drawHudBar, ensureGlowTexture, hex, NEON, vGradient } from '../theme.ts'
 
-export const MAX_STAGE = 10
+export const MAX_STAGE = 30
 export const BOOSTER_GOLD = 100
 
 const START_GOLD = 120
 /**
- * Difficulty curve (tuned 2026-10-02 with a headless bot sim of the real scene). The previous
- * +30% HP per stage with flat gold made stages 4-10 unwinnable: early towers couldn't keep up
- * with incoming HP. Gold, HP and wave size now scale together.
+ * Per-stage difficulty (30 stages). Tune with `npm run sim:td` — difficulty is an economy race
+ * (incoming HP/s vs. affordable DPS) and, since armor, a composition check: an MG-only build
+ * must stop working once armored enemies arrive.
  */
-const GOLD_PER_STAGE = 22
-const HP_GROWTH = 0.14
+export function stageTuning(stage: number) {
+  const s = stage - 1
+  return {
+    startGold: START_GOLD + 22 * s,
+    // HP grows 4.5%/stage to stage 21, then 3.5%/stage so the last stages stay beatable.
+    hpMul: 1 + 0.045 * Math.min(s, 20) + 0.035 * Math.max(0, s - 20),
+    /** Flat armor added to every armored enemy type. */
+    armorBonus: Math.floor(s / 6),
+    /** The boss starts unarmored (early players only afford MGs) and hardens every 4 stages. */
+    bossArmor: Math.floor(s / 4),
+    countBase: 6 + Math.round(stage * 0.45),
+    interval: Math.max(420, 900 - stage * 16),
+  }
+}
+/** Every hit deals at least this fraction of its raw damage, however thick the armor. */
+const MIN_DAMAGE_RATIO = 0.15
 const START_LIVES = 10
 const WAVES_PER_STAGE = 3
 const HUD_H = 120
@@ -74,7 +88,7 @@ function upgradeCost(type: TowerType, level: number): number {
   return Math.round(type.cost * (level === 1 ? 0.8 : 1.3))
 }
 
-type EnemyTypeId = 'grunt' | 'runner' | 'tank' | 'boss'
+type EnemyTypeId = 'grunt' | 'runner' | 'tank' | 'knight' | 'swarm' | 'boss'
 
 interface EnemyType {
   id: EnemyTypeId
@@ -85,20 +99,36 @@ interface EnemyType {
   color: number
   /** Lives lost when it reaches the end. */
   damage: number
+  /** Flat damage removed from every hit (before MIN_DAMAGE_RATIO). MG bullets bounce off. */
+  armor: number
 }
 
 const ENEMY_TYPES: Record<EnemyTypeId, EnemyType> = {
-  grunt: { id: 'grunt', hp: 40, speed: 70, gold: 6, radius: 20, color: NEON.green, damage: 1 },
-  runner: { id: 'runner', hp: 22, speed: 125, gold: 5, radius: 15, color: NEON.yellow, damage: 1 },
-  tank: { id: 'tank', hp: 160, speed: 40, gold: 15, radius: 26, color: 0xa8b0c8, damage: 2 },
-  boss: { id: 'boss', hp: 800, speed: 42, gold: 80, radius: 42, color: NEON.red, damage: 5 },
+  grunt: { id: 'grunt', hp: 40, speed: 70, gold: 6, radius: 20, color: NEON.green, damage: 1, armor: 0 },
+  runner: { id: 'runner', hp: 22, speed: 125, gold: 5, radius: 15, color: NEON.yellow, damage: 1, armor: 0 },
+  tank: { id: 'tank', hp: 150, speed: 40, gold: 15, radius: 26, color: 0xa8b0c8, damage: 2, armor: 5 },
+  /** 장갑병: thick armor — needs 저격/대포, MG barely scratches it. */
+  knight: { id: 'knight', hp: 80, speed: 62, gold: 13, radius: 22, color: NEON.purple, damage: 2, armor: 9 },
+  /** 꼬마 떼: tiny and fast, spawned in packs — 대포 splash food. */
+  swarm: { id: 'swarm', hp: 14, speed: 115, gold: 2, radius: 11, color: NEON.orange, damage: 1, armor: 0 },
+  boss: { id: 'boss', hp: 800, speed: 42, gold: 80, radius: 42, color: NEON.red, damage: 5, armor: 0 },
 }
 
-/** Runners join from stage 2, tanks from stage 3 (PRD 7.1). Repeats weight the mix. */
+const SWARM_PACK = 5
+
+/**
+ * Enemy mix by stage (repeats weight the pick). Runners from 2, armored tanks from 4,
+ * 장갑병 from 8, swarm packs from 12 (new enemy kinds force tower combinations).
+ */
 function unlockedEnemyTypes(stage: number): EnemyTypeId[] {
   const types: EnemyTypeId[] = ['grunt', 'grunt', 'grunt']
   if (stage >= 2) types.push('runner', 'runner')
-  if (stage >= 3) types.push('tank')
+  if (stage >= 4) types.push('tank')
+  if (stage >= 8) types.push('knight')
+  if (stage >= 10) types.push('knight')
+  if (stage >= 12) types.push('swarm')
+  if (stage >= 16) types.push('tank', 'knight')
+  if (stage >= 22) types.push('knight', 'swarm')
   return types
 }
 
@@ -126,6 +156,7 @@ interface Enemy {
   crown?: Phaser.GameObjects.Text
   aura?: Phaser.GameObjects.Image
   bob: number
+  armor: number
 }
 
 interface SpawnEntry {
@@ -167,6 +198,8 @@ export default class TowerDefenseScene extends Phaser.Scene {
   private toast!: Phaser.GameObjects.Text
   private recentKills: number[] = []
   private boss: Enemy | null = null
+  private tuning = stageTuning(1)
+  private lastBounceAt = -Infinity
   private dashes: Phaser.GameObjects.Image[] = []
 
   constructor() {
@@ -176,7 +209,8 @@ export default class TowerDefenseScene extends Phaser.Scene {
   create() {
     const init = getInitData(this)
     this.stage = init.stage
-    this.gold = START_GOLD + GOLD_PER_STAGE * (this.stage - 1) + (init.boosterActive ? BOOSTER_GOLD : 0)
+    this.tuning = stageTuning(this.stage)
+    this.gold = this.tuning.startGold + (init.boosterActive ? BOOSTER_GOLD : 0)
     this.lives = START_LIVES
     this.elapsed = 0
     this.enemies = []
@@ -307,13 +341,20 @@ export default class TowerDefenseScene extends Phaser.Scene {
 
   private buildSchedule() {
     const types = unlockedEnemyTypes(this.stage)
-    const interval = Math.max(450, 900 - this.stage * 28)
+    const { interval, countBase } = this.tuning
     let t = 1500
     this.schedule = []
     for (let w = 0; w < WAVES_PER_STAGE; w++) {
-      const count = 6 + this.stage + w * 2
+      const count = countBase + w * 2
       for (let i = 0; i < count; i++) {
-        this.schedule.push({ at: t, wave: w + 1, type: types[Math.floor(Math.random() * types.length)] })
+        const type = types[Math.floor(Math.random() * types.length)]
+        if (type === 'swarm') {
+          // A pack arrives in a tight burst.
+          for (let k = 0; k < SWARM_PACK; k++) this.schedule.push({ at: t + k * 140, wave: w + 1, type })
+          t += SWARM_PACK * 140
+        } else {
+          this.schedule.push({ at: t, wave: w + 1, type })
+        }
         t += interval
       }
       t += 2500
@@ -553,10 +594,11 @@ export default class TowerDefenseScene extends Phaser.Scene {
 
   private spawnEnemy(id: EnemyTypeId) {
     const type = ENEMY_TYPES[id]
-    const hp = Math.round(type.hp * (1 + HP_GROWTH * (this.stage - 1)))
+    const hp = Math.round(type.hp * this.tuning.hpMul)
+    const armor = id === 'boss' ? this.tuning.bossArmor : type.armor > 0 ? type.armor + this.tuning.armorBonus : 0
     const { x, y } = this.positionAt(0)
     const body = this.add.image(x, y, `td-enemy-${id}`).setDepth(5)
-    const enemy: Enemy = { type, hp, maxHp: hp, dist: 0, x, y, body, bob: Math.random() * Math.PI * 2 }
+    const enemy: Enemy = { type, hp, maxHp: hp, dist: 0, x, y, body, bob: Math.random() * Math.PI * 2, armor }
     if (id === 'boss') {
       enemy.aura = this.add.image(x, y, 'glow').setTint(NEON.red).setBlendMode(Phaser.BlendModes.ADD).setScale(3.4).setDepth(4)
       this.tweens.add({ targets: enemy.aura, alpha: { from: 0.5, to: 1 }, duration: 400, yoyo: true, repeat: -1 })
@@ -683,10 +725,16 @@ export default class TowerDefenseScene extends Phaser.Scene {
   }
 
   /** Single chokepoint for direct + splash damage: kills, gold-per-kill and VFX live here. */
-  private applyDamage(e: Enemy, amount: number) {
+  private applyDamage(e: Enemy, raw: number) {
     if (!this.enemies.includes(e)) return
+    const amount = Math.max(raw * MIN_DAMAGE_RATIO, raw - e.armor)
     e.hp -= amount
     hitFlash(this, e.body, 50)
+    // Teach the armor rule: show when a hit mostly bounced off (throttled).
+    if (amount < raw * 0.5 && this.time.now - this.lastBounceAt > 700) {
+      this.lastBounceAt = this.time.now
+      popText(this, e.x, e.y - e.type.radius - 6, '🛡 튕김!', { size: 22, color: 0xc9c2f0, rise: 30, duration: 500 })
+    }
     if (e.hp > 0) return
 
     this.kills += 1
@@ -921,6 +969,27 @@ function makeTextures(scene: Phaser.Scene) {
     ])
       g.fillCircle(x, y, 4)
     eyes(g, 30, 26, 6, true)
+  })
+  make('td-enemy-knight', 52, 52, (g) => {
+    // Purple shield-bearer with a steel rim.
+    g.fillStyle(0x3a1d6b, 1)
+    g.fillRoundedRect(4, 6, 44, 44, 12)
+    g.fillStyle(NEON.purple, 1)
+    g.fillRoundedRect(6, 4, 40, 42, 12)
+    g.lineStyle(4, 0xd8d4ff, 1)
+    g.strokeRoundedRect(6, 4, 40, 42, 12)
+    g.fillStyle(0xd8d4ff, 1)
+    g.fillTriangle(26, 12, 38, 18, 26, 40)
+    g.fillTriangle(26, 12, 14, 18, 26, 40)
+    g.fillStyle(0x3a1d6b, 1)
+    g.fillRect(24, 14, 4, 24)
+  })
+  make('td-enemy-swarm', 26, 26, (g) => {
+    g.fillStyle(0x6a3000, 1)
+    g.fillCircle(13, 14, 11)
+    g.fillStyle(NEON.orange, 1)
+    g.fillCircle(13, 12, 10)
+    eyes(g, 13, 12, 3.2, true)
   })
   make('td-enemy-boss', 100, 100, (g) => {
     g.fillStyle(0x5c0a1c, 1)

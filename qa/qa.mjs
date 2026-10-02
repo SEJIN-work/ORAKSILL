@@ -169,16 +169,19 @@ if (want('edge')) {
 if (want('features')) {
   const page = await newPage()
   await page.evaluate(() => localStorage.clear())
-  const unlockAll = () => setSave(page, { progress: Object.fromEntries(GAMES.map(([id]) => [id, { bestStage: 9, stageStars: {}, playCount: 1 }])) })
+  const unlockAll = () => setSave(page, { progress: Object.fromEntries(GAMES.map(([id]) => [id, { bestStage: 29, stageStars: {}, playCount: 1 }])) })
   await unlockAll()
   // TD: enemy mix by stage, 3 waves + boss
   const tdMix = []
-  for (const st of [1, 2, 3]) {
+  for (const st of [1, 2, 4, 8, 12]) {
     await start(page, 'tower-defense', st)
     await waitScene(page, 'TowerDefenseScene')
     tdMix.push(await scene(page, 'TowerDefenseScene', (s) => [...new Set(s.schedule.map((e) => e.type))].sort().join('+') + ` waves=${Math.max(...s.schedule.map((e) => e.wave))}`))
   }
-  log('TD: runner from st2, tank from st3, boss = wave 4', tdMix[0] === 'boss+grunt waves=4' && tdMix[1] === 'boss+grunt+runner waves=4' && tdMix[2] === 'boss+grunt+runner+tank waves=4', tdMix.join(' | '))
+  const tdExpect = ['boss+grunt', 'boss+grunt+runner', 'boss+grunt+runner+tank', 'boss+grunt+knight+runner+tank', 'boss+grunt+knight+runner+swarm+tank'].map((t) => t + ' waves=4')
+  log('TD: runner st2, armored tank st4, 장갑병 st8, swarm st12, boss = wave 4', tdMix.every((m, i) => m === tdExpect[i]), tdMix.join(' | '))
+  const armor = await scene(page, 'TowerDefenseScene', (s) => { s.spawnEnemy('knight'); s.spawnEnemy('grunt'); const n = s.enemies.length; return [s.enemies[n - 2].armor, s.enemies[n - 1].armor] })
+  log('TD: knights armored, grunts not', armor[0] >= 9 && armor[1] === 0, JSON.stringify(armor))
   // TD failure: no towers → defeat, 0 coins
   await page.evaluate(() => {
     const s = window.__tkaGame.scene.getScene('TowerDefenseScene')
@@ -189,12 +192,12 @@ if (want('features')) {
   log('TD: enemies leaking → DEFEAT, +0', t.includes('실패') && t.includes('+0'))
   // Bus: config scales by stage
   const busCfg = []
-  for (const st of [1, 4, 8]) {
+  for (const st of [1, 4, 8, 24]) {
     await start(page, 'color-parking', st)
     await waitScene(page, 'ColorParkingScene')
     busCfg.push(await scene(page, 'ColorParkingScene', (s) => `${s.cfg.lanes}/${s.cfg.busesPerLane}/${s.cfg.colors}/${s.cfg.seats}`))
   }
-  log('Bus: lanes/buses/colors/seats grow by stage', busCfg.join(' → ') === '3/2/2/3 → 4/3/4/3 → 5/5/5/4', busCfg.join(' → '))
+  log('Bus: lanes/buses/colors/seats grow by stage', busCfg.join(' → ') === '3/2/2/3 → 4/3/4/3 → 5/5/5/4 → 7/7/8/6', busCfg.join(' → '))
   // Stress: bombs from st2, tough from st3
   const sb = []
   for (const st of [1, 2, 3]) {
@@ -215,12 +218,20 @@ if (want('features')) {
   log('Stress: bomb −3, bonus +1 break & +5 coins', sbr.broken === 3 && sbr.bonus === 5, JSON.stringify(sbr))
   // Merge: obstacles from st3, bigger boards later
   const mg = []
-  for (const st of [1, 3, 4, 8]) {
+  for (const st of [1, 5, 14, 24]) {
     await start(page, 'merge-numbers', st)
     await waitScene(page, 'MergeNumbersScene')
     mg.push(await scene(page, 'MergeNumbersScene', (s) => `${s.cfg.size}x${s.cfg.size} obs=${s.board.flat().filter((v) => v === -2).length} goal=${s.cfg.target}`))
   }
-  log('Merge: obstacles from st3, board grows', mg[0].includes('obs=0') && mg[1].includes('obs=1') && mg[2].startsWith('5x5') && mg[3].startsWith('6x6') && mg[3].includes('goal=256'), mg.join(' | '))
+  log('Merge: boards/obstacles/targets per table', mg[0] === '4x4 obs=0 goal=64' && mg[1] === '5x5 obs=1 goal=128' && mg[2] === '6x6 obs=3 goal=256' && mg[3] === '6x6 obs=6 goal=256', mg.join(' | '))
+  // Stage counts: 30 / 24 / 30 / 24 buttons
+  const counts = []
+  for (const id of ['tower-defense', 'color-parking', 'stress-breaker', 'merge-numbers']) {
+    await page.goto(BASE + '/games/' + id)
+    await page.locator('button[aria-pressed]').first().waitFor()
+    counts.push(await page.locator('button[aria-pressed]').count())
+  }
+  log('Stage counts 30/24/30/24', counts.join('/') === '30/24/30/24', counts.join('/'))
   // Shared wallet: earn in Stress, spend in shop, use the item in Merge
   await page.evaluate(() => localStorage.clear())
   for (const st of [1, 2]) {

@@ -20,15 +20,24 @@ if (which !== 'merge') {
     const active = new Set(s.dock.filter(Boolean).map((b) => b!.color))
     return legal.find((k) => s.lanes[k][0].color === front) ?? legal.find((k) => active.has(s.lanes[k][0].color)) ?? legal[Math.floor(Math.random() * legal.length)]
   }
+  // Visible queue = 12 passengers; a player can see each lane's second bus too.
+  const soonness = (s: B.BusStopState, lane: number) => {
+    const next = s.lanes[lane][1]
+    if (!next) return 0 // emptying a lane is fine
+    const idx = s.queue.slice(s.queueIndex, s.queueIndex + 12).indexOf(next.color)
+    return idx < 0 ? 99 : idx
+  }
+  const byNeed = (s: B.BusStopState, lanes: number[]) => [...lanes].sort((a, b) => soonness(s, a) - soonness(s, b))
   const averagePick = (s: B.BusStopState): number => {
     const legal = s.lanes.map((_, k) => k).filter((k) => B.canMove(s, k))
     const front = s.queue[s.queueIndex]
     const soon = s.queue.slice(s.queueIndex, s.queueIndex + 4)
     const active = new Set(s.dock.filter(Boolean).map((b) => b!.color))
-    return legal.find((k) => s.lanes[k][0].color === front)
+    const match = byNeed(s, legal.filter((k) => s.lanes[k][0].color === front))
+    return match[0]
       ?? legal.find((k) => active.has(s.lanes[k][0].color))
-      ?? legal.find((k) => soon.includes(s.lanes[k][0].color))
-      ?? legal[Math.floor(Math.random() * legal.length)]
+      ?? byNeed(s, legal.filter((k) => soon.includes(s.lanes[k][0].color)))[0]
+      ?? byNeed(s, legal)[0]
   }
   const survives = (s: B.BusStopState, depth: number): boolean => {
     const st = B.getStatus(s)
@@ -47,7 +56,7 @@ if (which !== 'merge') {
     const pool = ok.length ? ok : legal
     const front = s.queue[s.queueIndex]
     const active = new Set(s.dock.filter(Boolean).map((b) => b!.color))
-    return pool.find((k) => s.lanes[k][0].color === front) ?? pool.find((k) => active.has(s.lanes[k][0].color)) ?? pool[Math.floor(Math.random() * pool.length)]
+    return byNeed(s, pool.filter((k) => s.lanes[k][0].color === front))[0] ?? pool.find((k) => active.has(s.lanes[k][0].color)) ?? byNeed(s, pool)[0]
   }
   const rows: Record<string, unknown>[] = []
   B.STAGES.forEach((cfg, i) => {

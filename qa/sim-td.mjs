@@ -72,30 +72,41 @@ for (const stage of STAGES) {
           s.selectedType = type
           s.build(pool[Math.floor(Math.random() * pool.length)].sl)
         }
+        // Reads the situation like a person: what's on the field + the next 15 spawns.
         const skilled = () => {
           const towers = s.slots.filter((sl) => sl.tower).map((sl) => sl.tower)
-          if (towers.length < 3) {
-            if (s.gold >= types[0].cost) { s.selectedType = types[0]; s.build(bestSlot(types[0])[0].sl) }
-            return
-          }
-          // Cheapest upgrade on the best-covering towers first (best DPS per gold).
-          const upg = towers.filter((tw) => tw.level < 3).sort((a, b) => upCost(a) - upCost(b))
-          if (upg.length && towers.length >= 4 && s.gold >= upCost(upg[0])) { s.upgrade(upg[0]); return }
-          const n = towers.length
-          const type = n % 3 === 0 ? types[2] : stage >= 3 && n % 5 === 4 ? types[1] : types[0]
+          const count = (id) => towers.filter((t) => t.type.id === id).length
+          const upcoming = s.schedule.slice(0, 15).map((e) => e.type).concat(s.enemies.map((e) => e.type.id))
+          const armored = upcoming.filter((t) => t === 'tank' || t === 'knight' || t === 'boss').length
+          const swarm = upcoming.filter((t) => t === 'swarm').length
+          let type = types[0]
+          if (armored >= 2 && count('sniper') < Math.ceil(armored / 3)) type = types[1]
+          else if (swarm >= 3 && count('cannon') < 2) type = types[2]
+          else if (towers.length >= 4 && count('cannon') < Math.floor(towers.length / 3)) type = types[2]
+          const upg = towers.filter((tw) => tw.level < 3).sort((x, y) => upCost(x) - upCost(y))
+          if (upg.length && towers.length >= 5 && s.gold >= upCost(upg[0]) && s.gold < type.cost) { s.upgrade(upg[0]); return }
           if (s.gold >= type.cost) { s.selectedType = type; s.build(bestSlot(type)[0].sl) }
         }
+        // The "just spam machine guns" player the user reported: MG only, upgrades included.
+        const mgonly = () => {
+          const towers = s.slots.filter((sl) => sl.tower).map((sl) => sl.tower)
+          const upg = towers.filter((tw) => tw.level < 3).sort((a, b) => upCost(a) - upCost(b))
+          if (upg.length && towers.length >= 4 && s.gold >= upCost(upg[0])) { s.upgrade(upg[0]); return }
+          if (s.gold >= types[0].cost) { s.selectedType = types[0]; s.build(bestSlot(types[0])[0].sl) }
+        }
         while (!s.ended && step < 60 * 400) {
-          if (step % (style === 'casual' ? 90 : 30) === 0) (style === 'casual' ? casual : skilled)()
+          if (step % (style === 'casual' ? 90 : 30) === 0) ({ casual, skilled, mgonly })[style]()
           t += 1000 / 60
           game.headlessStep(t, 1000 / 60)
           if (s.lives < lastLives && leakAt < 0) leakAt = s.currentWave
           lastLives = s.lives
           step++
         }
-        return { cleared: s.lives > 0 && s.spawningDone && s.enemies.length === 0, lives: s.lives, secs: Math.round(step / 60), leakAt }
+        const towers = s.slots.filter((x) => x.tower).map((x) => x.tower.type.id[0] + x.tower.level).join(' ')
+        return { cleared: s.lives > 0 && s.spawningDone && s.enemies.length === 0, lives: s.lives, secs: Math.round(step / 60), leakAt, towers, gold: s.gold }
       }, { style, tuning, stage })
       if (res.cleared) { wins++; lives += res.lives; secs += res.secs }
+      if (process.env.VERBOSE) console.log('  ', stage, style, JSON.stringify(res))
       leaksAt.push(res.leakAt)
     }
     row[style] = `${wins}/${RUNS}`
