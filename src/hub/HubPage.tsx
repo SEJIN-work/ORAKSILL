@@ -3,6 +3,7 @@ import CoinDisplay from '../components/CoinDisplay.tsx'
 import { GAME_REGISTRY } from '../games/registry.ts'
 import { loadSave } from '../systems/storage/storage.ts'
 import GameCard from './GameCard.tsx'
+import NoticeBar from './NoticeBar.tsx'
 import styles from './HubPage.module.css'
 
 export default function HubPage() {
@@ -32,6 +33,8 @@ export default function HubPage() {
         <span className={styles.dot} aria-hidden="true" />
         <span className={styles.insert}>INSERT COIN · PRESS START</span>
       </section>
+
+      <NoticeBar />
 
       <main className={styles.main}>
         <section className={styles.grid} aria-label="게임 목록">

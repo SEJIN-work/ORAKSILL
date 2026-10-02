@@ -1,0 +1,97 @@
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.card {
+  padding: 14px 16px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: linear-gradient(160deg, rgba(40, 32, 96, 0.9), rgba(16, 12, 44, 0.95));
+  animation: rise-in 0.35s ease-out both;
+}
+
+.latest {
+  border-color: rgba(255, 225, 77, 0.5);
+  box-shadow: 0 0 18px rgba(255, 225, 77, 0.15);
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 0.8rem;
+}
+
+.tag {
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.75rem;
+}
+
+.tagNew {
+  background: rgba(255, 46, 136, 0.18);
+  color: var(--neon-pink);
+  border: 1px solid rgba(255, 46, 136, 0.5);
+}
+
+.tagImprove {
+  background: rgba(0, 229, 255, 0.14);
+  color: var(--neon-cyan);
+  border: 1px solid rgba(0, 229, 255, 0.45);
+}
+
+.tagFix {
+  background: rgba(57, 255, 136, 0.12);
+  color: var(--neon-green);
+  border: 1px solid rgba(57, 255, 136, 0.45);
+}
+
+.tagNotice {
+  background: rgba(255, 225, 77, 0.12);
+  color: var(--neon-yellow);
+  border: 1px solid rgba(255, 225, 77, 0.45);
+}
+
+.version {
+  font-family: var(--font-display);
+  color: var(--text);
+}
+
+.date {
+  color: var(--text-dim);
+}
+
+.new {
+  padding: 0 6px;
+  border-radius: 5px;
+  background: var(--neon-pink);
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  color: #fff;
+}
+
+.title {
+  margin: 0 0 6px;
+  font-size: 1.15rem;
+  color: #fff;
+}
+
+.items {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.items li::marker {
+  color: var(--neon-cyan);
+}

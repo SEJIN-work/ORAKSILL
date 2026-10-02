@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import HubPage from './hub/HubPage.tsx'
 import ShopPage from './pages/ShopPage.tsx'
+import NoticesPage from './pages/NoticesPage.tsx'
 import SettingsPage from './pages/SettingsPage.tsx'
 import { installAudioUnlock, sfx } from './systems/audio/audio.ts'
 
@@ -34,6 +35,7 @@ export default function App() {
           <Route path="/" element={<HubPage />} />
           <Route path="/shop" element={<ShopPage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/notices" element={<NoticesPage />} />
           <Route path="/games/tower-defense" element={<TowerDefenseScreen />} />
           <Route path="/games/color-parking" element={<ColorParkingScreen />} />
           <Route path="/games/stress-breaker" element={<StressBreakerScreen />} />

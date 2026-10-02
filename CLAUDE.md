@@ -9,7 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Build stage status
 
-All 4 stages are done (2026-10-02). New work is post-MVP polish/maintenance: keep the rules in this file, and re-run the `qa/` suites after changes.
+All 4 stages are done (2026-10-02). New work is post-MVP polish/maintenance: keep the rules in this file, re-run the `qa/` suites after changes, and **for every user-visible change add a release note at the top of `src/data/notices.ts`** (see "Notices"). Deployed at https://oraksill.vercel.app from `SEJIN-work/ORAKSILL` (`main` auto-deploys on Vercel).
 
 1. ✅ **Skeleton** — Vite 8 + React 19 + TS 6 + Phaser 4.2 + react-router-dom 7; hub, Shop/Settings pages, 4 game routes (lazy), save/currency/shop modules.
 2. ✅ **Core gameplay & systems** — real save, coins, shop + item effects, `GameRunner` session flow, all 4 games playable start-to-finish with 1-3★.
@@ -67,6 +67,12 @@ QA env vars: `QA_BASE` (dev server, default `http://localhost:5173`), `QA_PREVIE
 **Keyboard**: Phaser can dispatch the same `KeyboardEvent` twice when several keys land in one frame; dedupe by event object (the `WeakSet` in `MergeNumbersScene.create()`).
 
 **Adding a 5th game**: new `src/games/<id>/` with Scene + Screen, a `GAME_REGISTRY` entry, a lazy route in `App.tsx`, a `GameId` union member + `GAME_IDS` entry in `src/types/save.ts` (`createDefaultSave()` builds per-game progress from `GAME_IDS`).
+
+### Notices (update history)
+
+- `src/data/notices.ts#NOTICES` is the single source of release notes, **newest first**: `{ id, version, date, title, tag: '신규'|'개선'|'수정'|'공지', items[] }`. To announce an update, prepend an entry with a new, never-reused `id` (use the version, e.g. `1.1.1`) and bump the version semantically (fix → patch, feature → minor). Write items in plain player-facing Korean, not dev jargon.
+- The hub shows `NoticeBar` (one line: latest title + NEW badge, links to `/notices`); `pages/NoticesPage.tsx` lists all entries and marks the newest as seen on visit.
+- "Seen" lives in its own localStorage key `tka:notice-seen` (= newest seen `id`), deliberately **not** in `PlayerSave`: it's UI state, so no `SAVE_VERSION` bump and 데이터 초기화 leaves it alone.
 
 ### Economy & shop (`systems/economy.ts`, `systems/shop/shop.ts`)
 
