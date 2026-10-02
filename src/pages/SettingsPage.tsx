@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import BackToHubButton from '../components/BackToHubButton.tsx'
-import { invalidateSoundSetting, sfx } from '../systems/audio/audio.ts'
+import { getAudioStatus, invalidateSoundSetting, sfx, unlockAudio, type AudioStatus } from '../systems/audio/audio.ts'
 import { vibrate } from '../systems/haptics.ts'
 import { getSettings, setSetting } from '../systems/settings.ts'
 import { resetSave } from '../systems/storage/storage.ts'
@@ -13,9 +13,33 @@ const TOGGLES: { key: keyof Settings; icon: string; label: string; hint: string 
   { key: 'vibrationEnabled', icon: '📳', label: '진동', hint: '지원되는 모바일 기기에서만 동작' },
 ]
 
+const AUDIO_STATUS_LABEL: Record<AudioStatus, string> = {
+  running: '✅ 켜짐',
+  suspended: '⏸ 대기 중 — 화면을 한 번 탭하세요',
+  interrupted: '⏸ 중단됨 — 다시 탭하세요',
+  'not-started': '아직 시작 안 됨 — 아래 버튼을 눌러보세요',
+  closed: '⏹ 닫힘 — 아래 버튼을 눌러보세요',
+  unsupported: '❌ 이 브라우저는 웹 오디오를 지원하지 않아요',
+}
+
 export default function SettingsPage() {
   const [settings, setSettings] = useState(getSettings)
   const [resetDone, setResetDone] = useState(false)
+  const [audioStatus, setAudioStatus] = useState<AudioStatus>(getAudioStatus)
+
+  useEffect(() => {
+    const id = window.setInterval(() => setAudioStatus(getAudioStatus()), 400)
+    return () => window.clearInterval(id)
+  }, [])
+
+  function testSound() {
+    // A click is an activating gesture everywhere (incl. iOS Safari), so this can always unlock.
+    unlockAudio()
+    window.setTimeout(() => {
+      sfx.coin(6)
+      setAudioStatus(getAudioStatus())
+    }, 150)
+  }
 
   function toggle(key: keyof Settings, value: boolean) {
     setSettings(setSetting(key, value))
@@ -66,6 +90,16 @@ export default function SettingsPage() {
           </li>
         ))}
       </ul>
+
+      <section className={styles.audioTest}>
+        <p className={styles.hint}>
+          오디오 상태: <b className={styles.audioStatus}>{settings.soundEnabled ? AUDIO_STATUS_LABEL[audioStatus] : '🔇 사운드 꺼짐 (위에서 켜세요)'}</b>
+        </p>
+        <button className={`btn btn-ghost ${styles.testButton}`} onClick={testSound} disabled={!settings.soundEnabled}>
+          🔊 소리 테스트
+        </button>
+        <p className={styles.hint}>iPhone은 옆면 무음 스위치가 켜져 있으면 소리가 나지 않아요.</p>
+      </section>
 
       <section className={styles.danger}>
         <h2 className={styles.dangerTitle}>데이터</h2>

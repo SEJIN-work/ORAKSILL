@@ -54,28 +54,46 @@ function ensureContext(): AudioContext | null {
 }
 
 /**
- * Browsers block AudioContext until a user gesture. Must run synchronously inside a gesture
- * handler. Mobile browsers (iOS Safari especially) only count touchend/click as the gesture,
- * not touchstart/pointerdown — see installAudioUnlock().
+ * Events that count as a user activation for audio on every browser. iOS Safari does NOT count
+ * touchstart / pointerdown (finger down) — only finger up (touchend), click and keys. Creating or
+ * resuming the AudioContext from a non-activating event is what kept iPhones silent.
+ */
+const ACTIVATING_EVENTS = ['touchend', 'click', 'keydown', 'mousedown'] as const
+
+let failedUnlocks = 0
+
+/**
+ * Creates (if needed) and resumes the AudioContext. Must run synchronously inside an
+ * activating gesture handler (see ACTIVATING_EVENTS).
  */
 export function unlockAudio(): void {
+  // A context that already failed to start inside a real gesture is replaced with a fresh one
+  // created inside this gesture (iOS can leave a context created too early permanently silent).
+  if (ctx && ctx.state !== 'running' && failedUnlocks > 0) {
+    void ctx.close().catch(() => {})
+    ctx = null
+  }
   const c = ensureContext()
   if (!c || c.state === 'running') return
   // 'interrupted' is iOS's state after a call / app switch; resume() works for it too.
-  void c.resume()
+  void c.resume().then(
+    () => { if (c.state === 'running') failedUnlocks = 0 },
+    () => {},
+  )
   // Classic iOS unlock: start a 1-sample silent buffer inside the gesture.
   const src = c.createBufferSource()
   src.buffer = c.createBuffer(1, 1, c.sampleRate)
   src.connect(c.destination)
   src.start(0)
+  // If it still isn't running shortly after, the next gesture recreates the context.
+  window.setTimeout(() => { if (ctx === c && c.state !== 'running') failedUnlocks++ }, 300)
 }
 
 let unlockInstalled = false
 
 /**
- * Keeps trying to unlock on every kind of gesture, forever: the first touch may not count
- * (pointerdown on mobile), and iOS re-suspends audio after calls/app switches. Once running,
- * each handler is a cheap state check. Also starts the BGM loop.
+ * Keeps trying to unlock on every activating gesture, forever: iOS re-suspends audio after
+ * calls/app switches. Once running, each handler is a cheap state check. Also starts the BGM loop.
  */
 export function installAudioUnlock(): void {
   if (unlockInstalled) return
@@ -85,20 +103,29 @@ export function installAudioUnlock(): void {
     unlockAudio()
     startBgm()
   }
-  for (const type of ['pointerdown', 'pointerup', 'touchstart', 'touchend', 'click', 'keydown']) {
-    window.addEventListener(type, onGesture, { capture: true, passive: true })
-  }
+  for (const type of ACTIVATING_EVENTS) document.addEventListener(type, onGesture, { capture: true, passive: true })
   // Coming back to the tab: some browsers allow resume without a new gesture.
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && ctx && ctx.state !== 'running') void ctx.resume().catch(() => {})
   })
 }
 
+export type AudioStatus = 'unsupported' | 'not-started' | 'running' | 'suspended' | 'interrupted' | 'closed'
+
+/** For the Settings "소리 테스트" readout. */
+export function getAudioStatus(): AudioStatus {
+  const has = typeof window !== 'undefined' && (window.AudioContext ?? (window as unknown as { webkitAudioContext?: unknown }).webkitAudioContext)
+  if (!has) return 'unsupported'
+  if (!ctx) return 'not-started'
+  return ctx.state as AudioStatus
+}
+
 function ready(): AudioContext | null {
   if (!soundEnabled()) return null
-  const c = ensureContext()
-  if (!c || c.state !== 'running') return null
-  return c
+  // Never create the context here: a sound may fire from a non-activating event (e.g. pointerdown),
+  // and on iOS a context created outside a real gesture can stay silent. Only gestures create it.
+  if (!ctx || ctx.state !== 'running') return null
+  return ctx
 }
 
 const lastPlayed = new Map<string, number>()
@@ -419,7 +446,6 @@ function bgmTick() {
 
 /** Idempotent: starts the ambient loop once; it silently idles while sound is off. */
 export function startBgm(): void {
-  ensureContext()
   if (bgmTimer !== null) return
   bgmTimer = window.setInterval(bgmTick, 50)
 }
