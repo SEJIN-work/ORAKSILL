@@ -74,6 +74,9 @@ function boot({ parent, scene, width, height, backgroundColor, initData, bus }: 
       autoCenter: Phaser.Scale.CENTER_BOTH,
     },
     input: { activePointers: 3 },
+    // All sound is our own Web Audio (systems/audio). Phaser's sound manager would create (and
+    // close) an extra AudioContext per attempt, which on iOS can interrupt the shared one.
+    audio: { noAudio: true },
     scene,
     render: { antialias: true },
   })

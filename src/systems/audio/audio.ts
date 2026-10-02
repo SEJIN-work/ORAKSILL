@@ -53,10 +53,45 @@ function ensureContext(): AudioContext | null {
   return ctx
 }
 
-/** Browsers block AudioContext until a user gesture; App.tsx calls this on the first pointerdown. */
+/**
+ * Browsers block AudioContext until a user gesture. Must run synchronously inside a gesture
+ * handler. Mobile browsers (iOS Safari especially) only count touchend/click as the gesture,
+ * not touchstart/pointerdown — see installAudioUnlock().
+ */
 export function unlockAudio(): void {
   const c = ensureContext()
-  if (c && c.state === 'suspended') void c.resume()
+  if (!c || c.state === 'running') return
+  // 'interrupted' is iOS's state after a call / app switch; resume() works for it too.
+  void c.resume()
+  // Classic iOS unlock: start a 1-sample silent buffer inside the gesture.
+  const src = c.createBufferSource()
+  src.buffer = c.createBuffer(1, 1, c.sampleRate)
+  src.connect(c.destination)
+  src.start(0)
+}
+
+let unlockInstalled = false
+
+/**
+ * Keeps trying to unlock on every kind of gesture, forever: the first touch may not count
+ * (pointerdown on mobile), and iOS re-suspends audio after calls/app switches. Once running,
+ * each handler is a cheap state check. Also starts the BGM loop.
+ */
+export function installAudioUnlock(): void {
+  if (unlockInstalled) return
+  unlockInstalled = true
+  const onGesture = () => {
+    if (ctx?.state === 'running') return
+    unlockAudio()
+    startBgm()
+  }
+  for (const type of ['pointerdown', 'pointerup', 'touchstart', 'touchend', 'click', 'keydown']) {
+    window.addEventListener(type, onGesture, { capture: true, passive: true })
+  }
+  // Coming back to the tab: some browsers allow resume without a new gesture.
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && ctx && ctx.state !== 'running') void ctx.resume().catch(() => {})
+  })
 }
 
 function ready(): AudioContext | null {

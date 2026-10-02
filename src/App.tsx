@@ -3,7 +3,7 @@ import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import HubPage from './hub/HubPage.tsx'
 import ShopPage from './pages/ShopPage.tsx'
 import SettingsPage from './pages/SettingsPage.tsx'
-import { sfx, startBgm, unlockAudio } from './systems/audio/audio.ts'
+import { installAudioUnlock, sfx } from './systems/audio/audio.ts'
 
 // Game screens are lazy-loaded so Phaser is only pulled in when a game route is visited.
 const TowerDefenseScreen = lazy(() => import('./games/tower-defense/TowerDefenseScreen.tsx'))
@@ -15,19 +15,14 @@ export default function App() {
   const location = useLocation()
 
   useEffect(() => {
-    // Browsers block AudioContext until a user gesture.
-    const unlock = () => {
-      unlockAudio()
-      startBgm()
-    }
-    window.addEventListener('pointerdown', unlock, { once: true })
+    // Browsers block AudioContext until a user gesture (on mobile: touchend/click, not pointerdown).
+    installAudioUnlock()
     // UI click blip for every button/link (canvas taps have their own per-game sounds).
     const click = (e: PointerEvent) => {
       if ((e.target as Element | null)?.closest('button, a, label')) sfx.click()
     }
     window.addEventListener('pointerdown', click)
     return () => {
-      window.removeEventListener('pointerdown', unlock)
       window.removeEventListener('pointerdown', click)
     }
   }, [])
