@@ -16,6 +16,14 @@ export interface Notice {
 
 export const NOTICES: Notice[] = [
   {
+    id: '1.2.1',
+    version: 'v1.2.1',
+    date: '2026-10-02',
+    title: '버스 정류장 오류 수정',
+    tag: '수정',
+    items: ['버스 정류장: 승객이 다 탄 버스가 가끔 출발하지 않고 정류장에 남아 보이던 문제를 고쳤어요.'],
+  },
+  {
     id: '1.2.0',
     version: 'v1.2.0',
     date: '2026-10-02',

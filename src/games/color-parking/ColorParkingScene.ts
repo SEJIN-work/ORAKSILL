@@ -416,7 +416,9 @@ export default class ColorParkingScene extends Phaser.Scene {
           this.tweens.add({ targets: pip, scale: { from: 1.8, to: 1 }, duration: 160, ease: 'Back.Out' })
         }
         view.filled += 1
-        punch(this, view.container, 1.08, 70)
+        // A slow frame can land this after the bus has already pulled away. punch() kills the
+        // container's tweens — the departure too — which left a full bus parked in the dock.
+        if (this.dockViews[slot] === view) punch(this, view.container, 1.08, 70)
         sfx.board(view.filled)
         burst(this, tx, ty - 40, 0xffffff, { count: 5, speed: 140, size: 6, gravity: 0, glow: false })
       },
@@ -443,6 +445,9 @@ export default class ColorParkingScene extends Phaser.Scene {
     if (!view || view.busId !== busId) return
     this.dockViews[slot] = null
     const c = view.container
+    // Stop a still-running punch so it can't fight the departure.
+    this.tweens.killTweensOf(c)
+    c.setScale(1)
     const x = c.x
     sfx.depart()
     vibrate(20)
