@@ -1,0 +1,19 @@
+.row {
+  display: inline-flex;
+  gap: 4px;
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.small {
+  gap: 1px;
+  font-size: 0.7rem;
+}
+
+.on {
+  color: #ffd23f;
+}
+
+.off {
+  color: #44445e;
+}

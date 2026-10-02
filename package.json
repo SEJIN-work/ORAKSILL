@@ -1,0 +1,36 @@
+{
+  "name": "time-killer-arcade",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "oxlint",
+    "preview": "vite preview",
+    "qa:test": "node qa/tests.mjs",
+    "qa:prd": "node qa/qa.mjs",
+    "qa:shots": "node qa/shots.mjs",
+    "qa:perf": "node qa/perf.mjs",
+    "qa:bus-guarantee": "node qa/bus-guarantee.ts 1000",
+    "sim:stress": "node qa/sim-stress.mjs",
+    "sim:puzzles": "node qa/sim-puzzles.ts both 300",
+    "sim:td": "node qa/sim-td.mjs 8 1,2,3,4,5,6,7,8,9,10"
+  },
+  "dependencies": {
+    "phaser": "^4.2.1",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-router-dom": "^7.18.4"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
+    "@vitejs/plugin-react": "^6.1.1",
+    "oxlint": "^1.81.0",
+    "playwright-core": "^1.63.0",
+    "typescript": "~6.0.2",
+    "vite": "^8.3.0"
+  }
+}

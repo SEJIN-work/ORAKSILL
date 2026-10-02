@@ -1,0 +1,172 @@
+.screen {
+  display: flex;
+  justify-content: center;
+  height: 100dvh;
+  padding: 10px;
+  padding-top: max(10px, env(safe-area-inset-top));
+  padding-bottom: max(10px, env(safe-area-inset-bottom));
+}
+
+.cabinet {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 760px;
+  min-height: 0;
+  padding: 10px;
+  border-radius: 26px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 30%),
+    linear-gradient(160deg, #2a2160, #140f38 60%, #0d0a28);
+  border: 2px solid color-mix(in srgb, var(--accent) 55%, #2a2160);
+  box-shadow:
+    0 0 0 4px #0a0820,
+    0 0 30px color-mix(in srgb, var(--accent) 35%, transparent),
+    inset 0 0 22px rgba(0, 0, 0, 0.6);
+}
+
+.bolt {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #d8d4ff, #6a62a8 60%, #2c2660);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.6);
+}
+
+.tl {
+  top: 8px;
+  left: 8px;
+}
+
+.tr {
+  top: 8px;
+  right: 8px;
+}
+
+.bl {
+  bottom: 8px;
+  left: 8px;
+}
+
+.br {
+  bottom: 8px;
+  right: 8px;
+}
+
+.marquee {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 8px 10px;
+  padding: 8px 10px;
+  border-radius: 16px;
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--accent) 85%, #000), color-mix(in srgb, var(--accent2) 85%, #000));
+  box-shadow:
+    0 0 18px color-mix(in srgb, var(--accent) 45%, transparent),
+    inset 0 2px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.3);
+  flex-shrink: 0;
+}
+
+.titleWrap {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.05;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(1.2rem, 5vw, 1.6rem);
+  color: #fff;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.45), 0 0 12px rgba(255, 255, 255, 0.4);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tagline {
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  letter-spacing: 0.3em;
+  color: rgba(10, 8, 32, 0.75);
+}
+
+/* min-height: 0 lets this flex child shrink so Phaser's FIT scaling measures a real height. */
+.glass {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  padding: 8px;
+  border-radius: 16px;
+  background: radial-gradient(ellipse at 50% 0%, rgba(155, 92, 255, 0.12), transparent 60%), #05040f;
+  box-shadow: inset 0 0 0 2px #000, inset 0 0 30px rgba(0, 0, 0, 0.9), inset 0 0 60px color-mix(in srgb, var(--accent) 8%, transparent);
+  overflow: hidden;
+}
+
+@media (max-width: 480px) {
+  .screen {
+    padding: 6px;
+  }
+
+  .cabinet {
+    padding: 6px;
+    border-radius: 20px;
+  }
+
+  .bolt {
+    display: none;
+  }
+
+  .marquee {
+    margin: 0 0 6px;
+  }
+
+  .glass {
+    padding: 4px;
+  }
+}
+
+/*
+ * Landscape phones: every game is portrait (720×1080), so vertical space is everything.
+ * The marquee becomes a slim left sidebar instead of eating ~80px of height.
+ */
+@media (orientation: landscape) and (max-height: 520px) {
+  .screen {
+    padding: 4px max(4px, env(safe-area-inset-right)) 4px max(4px, env(safe-area-inset-left));
+  }
+
+  .cabinet {
+    flex-direction: row;
+    max-width: none;
+    padding: 4px;
+    border-radius: 16px;
+  }
+
+  .bolt,
+  .tagline {
+    display: none;
+  }
+
+  .marquee {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    width: 116px;
+    margin: 0 6px 0 0;
+    padding: 6px;
+  }
+
+  .title {
+    font-size: 1rem;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .glass {
+    padding: 4px;
+  }
+}

@@ -1,0 +1,25 @@
+.page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 16px 16px 90px;
+  padding-top: max(16px, env(safe-area-inset-top));
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 10px 12px;
+  border-radius: var(--radius-lg);
+  background: rgba(14, 10, 40, 0.8);
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.title {
+  margin: 0;
+  flex: 1;
+  font-size: 1.7rem;
+  color: #fff;
+}

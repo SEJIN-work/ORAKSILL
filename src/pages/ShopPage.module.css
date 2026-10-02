@@ -1,0 +1,223 @@
+.shopTitle {
+  color: var(--neon-yellow);
+  text-shadow: 0 0 10px rgba(255, 225, 77, 0.6);
+}
+
+.intro {
+  margin: -8px 0 18px;
+  color: var(--text-dim);
+  font-size: 0.9rem;
+}
+
+.group + .group {
+  margin-top: 24px;
+}
+
+.groupTitle {
+  margin: 0 0 10px;
+  font-size: 1.2rem;
+  color: #fff;
+}
+
+.groupTitle span {
+  margin-left: 6px;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--text-dim);
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+@media (min-width: 680px) {
+  .list {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  border-radius: var(--radius-lg);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  background: linear-gradient(160deg, rgba(40, 32, 96, 0.9), rgba(16, 12, 44, 0.95));
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+  animation: rise-in 0.35s ease-out both;
+}
+
+.justBought {
+  animation: bought 0.6s ease-out;
+}
+
+@keyframes bought {
+  0% {
+    box-shadow: 0 0 0 0 var(--neon-yellow);
+  }
+  30% {
+    transform: scale(1.03);
+    box-shadow: 0 0 0 4px var(--neon-yellow), 0 0 40px rgba(255, 225, 77, 0.6);
+  }
+  100% {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+  }
+}
+
+.emoji {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  flex-shrink: 0;
+  font-size: 2.1rem;
+  background: radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--accent) 45%, transparent), rgba(10, 8, 34, 0.9) 70%);
+  border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+.info {
+  flex: 1;
+  min-width: 0;
+}
+
+.name {
+  margin: 0;
+  font-size: 1.1rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.tag {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent);
+  color: var(--accent);
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.description {
+  margin: 4px 0;
+  color: var(--text-dim);
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.owned {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+.owned b {
+  color: var(--neon-cyan);
+  font-size: 0.95rem;
+}
+
+.buy {
+  flex-shrink: 0;
+  min-width: 92px;
+  min-height: 48px;
+  padding: 0 12px;
+  font-size: 1.15rem;
+}
+
+.coin {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff7c2, #ffd23f 45%, #c48a00);
+  box-shadow: 0 0 0 2px #8a5c00 inset;
+}
+
+.plusOne {
+  position: absolute;
+  right: 26px;
+  top: 4px;
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  color: var(--neon-yellow);
+  text-shadow: 0 0 10px var(--neon-yellow);
+  pointer-events: none;
+  animation: plus-one 0.9s ease-out forwards;
+}
+
+@keyframes plus-one {
+  from {
+    transform: translateY(10px) scale(0.6);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-34px) scale(1.2);
+    opacity: 0;
+  }
+}
+
+.toastArea {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: max(20px, env(safe-area-inset-bottom));
+  display: flex;
+  justify-content: center;
+  padding: 0 16px;
+  pointer-events: none;
+  z-index: 50;
+}
+
+.toast {
+  max-width: 420px;
+  padding: 12px 20px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-align: center;
+  backdrop-filter: blur(6px);
+  animation: toast-in 2.2s ease-out both;
+}
+
+.ok {
+  color: #04140b;
+  background: linear-gradient(180deg, #8dffbf, var(--neon-green));
+  box-shadow: 0 0 24px rgba(57, 255, 136, 0.5);
+}
+
+.fail {
+  color: #fff;
+  background: linear-gradient(180deg, #ff7a92, var(--neon-red));
+  box-shadow: 0 0 24px rgba(255, 77, 109, 0.5);
+}
+
+@keyframes toast-in {
+  0% {
+    transform: translateY(40px) scale(0.8);
+    opacity: 0;
+  }
+  10% {
+    transform: translateY(-4px) scale(1.04);
+    opacity: 1;
+  }
+  15%,
+  85% {
+    transform: none;
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+}

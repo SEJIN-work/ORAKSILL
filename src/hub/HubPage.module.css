@@ -1,0 +1,129 @@
+.page {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 18px 16px 28px;
+  padding-top: max(18px, env(safe-area-inset-top));
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.brand {
+  min-width: 0;
+}
+
+.kicker {
+  margin: 0 0 2px;
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  letter-spacing: 0.42em;
+  color: var(--neon-cyan);
+  text-shadow: 0 0 8px var(--neon-cyan);
+}
+
+.logo {
+  margin: 0;
+  font-size: clamp(2.1rem, 8vw, 3.6rem);
+  line-height: 1.05;
+  white-space: nowrap;
+}
+
+.logoA {
+  color: #fff;
+  text-shadow: var(--text-glow-pink);
+}
+
+.logoB {
+  color: var(--neon-yellow);
+  text-shadow: 0 0 4px #fff, 0 0 12px var(--neon-yellow), 0 0 30px var(--neon-orange);
+  animation: neon-flicker 5s infinite;
+}
+
+.ticker {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(10, 8, 34, 0.7);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--neon-purple);
+  flex-shrink: 0;
+}
+
+.insert {
+  margin-left: auto;
+  font-family: var(--font-display);
+  letter-spacing: 0.18em;
+  color: var(--neon-pink);
+  animation: neon-flicker 2.4s infinite;
+}
+
+@media (max-width: 520px) {
+  .insert,
+  .insert + * {
+    display: none;
+  }
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+@media (min-width: 600px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1020px) {
+  .grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 12px;
+}
+
+.shopButton,
+.settingsButton {
+  min-height: 60px;
+  font-size: 1.25rem;
+}
+
+.footer {
+  margin-top: 22px;
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  opacity: 0.7;
+}

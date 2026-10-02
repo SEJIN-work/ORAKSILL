@@ -1,0 +1,291 @@
+/*
+ * Neon-arcade design tokens + shared keyframes. Components use these via CSS Modules;
+ * Phaser scenes mirror the same palette in src/games/theme.ts.
+ */
+:root {
+  --bg: #07061a;
+  --bg-2: #110d33;
+  --surface: rgba(26, 21, 66, 0.78);
+  --surface-2: rgba(40, 32, 96, 0.85);
+  --border: rgba(122, 104, 255, 0.28);
+  --border-strong: rgba(150, 132, 255, 0.55);
+  --text: #f4f1ff;
+  --text-dim: #a89fd6;
+
+  --neon-pink: #ff2e88;
+  --neon-cyan: #00e5ff;
+  --neon-yellow: #ffe14d;
+  --neon-green: #39ff88;
+  --neon-purple: #9b5cff;
+  --neon-orange: #ff8a2b;
+  --neon-red: #ff4d6d;
+  --accent: var(--neon-cyan);
+
+  --glow-cyan: 0 0 6px rgba(0, 229, 255, 0.7), 0 0 22px rgba(0, 229, 255, 0.35);
+  --glow-pink: 0 0 6px rgba(255, 46, 136, 0.7), 0 0 22px rgba(255, 46, 136, 0.35);
+  --glow-yellow: 0 0 6px rgba(255, 225, 77, 0.7), 0 0 22px rgba(255, 225, 77, 0.35);
+  --text-glow-cyan: 0 0 4px #fff, 0 0 10px var(--neon-cyan), 0 0 26px var(--neon-cyan);
+  --text-glow-pink: 0 0 4px #fff, 0 0 10px var(--neon-pink), 0 0 26px var(--neon-pink);
+
+  --radius: 14px;
+  --radius-lg: 22px;
+  --font-display: 'Black Han Sans', 'Noto Sans KR', sans-serif;
+  --font-body: 'Noto Sans KR', system-ui, -apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+
+  color-scheme: dark;
+  font-family: var(--font-body);
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--bg);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  min-height: 100dvh;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(155, 92, 255, 0.35), transparent 70%),
+    radial-gradient(ellipse 60% 40% at 100% 100%, rgba(255, 46, 136, 0.18), transparent 70%),
+    radial-gradient(ellipse 60% 40% at 0% 90%, rgba(0, 229, 255, 0.14), transparent 70%),
+    var(--bg);
+  background-attachment: fixed;
+  -webkit-tap-highlight-color: transparent;
+  overflow-x: hidden;
+}
+
+/* Perspective "synthwave" floor grid behind every page. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: auto -50% -10% -50%;
+  height: 55vh;
+  background:
+    repeating-linear-gradient(90deg, rgba(155, 92, 255, 0.22) 0 1px, transparent 1px 64px),
+    repeating-linear-gradient(0deg, rgba(155, 92, 255, 0.22) 0 1px, transparent 1px 64px);
+  transform: perspective(380px) rotateX(62deg);
+  transform-origin: bottom;
+  mask-image: linear-gradient(to top, #000 10%, transparent 85%);
+  animation: grid-scroll 3.5s linear infinite;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Subtle CRT scanlines. */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.16) 0 1px, transparent 1px 3px);
+  pointer-events: none;
+  z-index: 100;
+  mix-blend-mode: multiply;
+}
+
+h1,
+h2,
+h3,
+button {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-size: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 2px solid var(--neon-cyan);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@keyframes grid-scroll {
+  to {
+    background-position: 0 64px, 0 64px;
+  }
+}
+
+@keyframes neon-flicker {
+  0%, 18%, 22%, 25%, 53%, 57%, 100% {
+    opacity: 1;
+  }
+  20%, 24%, 55% {
+    opacity: 0.55;
+  }
+}
+
+@keyframes float-bob {
+  0%, 100% {
+    transform: translateY(0) rotate(-3deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(3deg);
+  }
+}
+
+@keyframes pop-in {
+  0% {
+    transform: scale(0) rotate(-20deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.35) rotate(8deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0);
+  }
+}
+
+@keyframes rise-in {
+  from {
+    transform: translateY(18px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(0, 229, 255, 0.55), var(--glow-cyan);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(0, 229, 255, 0), var(--glow-cyan);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes shimmer {
+  to {
+    background-position: 200% 0;
+  }
+}
+
+/* Shared chunky arcade button. */
+.btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 52px;
+  padding: 0 22px;
+  border: none;
+  border-radius: var(--radius);
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  color: #06121a;
+  background: linear-gradient(180deg, #7cf4ff, var(--neon-cyan) 55%, #00a9c7);
+  box-shadow: 0 5px 0 #006a80, 0 8px 18px rgba(0, 229, 255, 0.35);
+  transition: transform 0.08s, box-shadow 0.08s, filter 0.15s;
+  user-select: none;
+}
+
+.btn:hover {
+  filter: brightness(1.1);
+}
+
+.btn:active {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 #006a80, 0 3px 8px rgba(0, 229, 255, 0.3);
+}
+
+.btn:disabled,
+.btn[aria-disabled='true'] {
+  filter: grayscale(0.8) brightness(0.6);
+  cursor: not-allowed;
+}
+
+.btn-pink {
+  color: #fff;
+  background: linear-gradient(180deg, #ff7ab5, var(--neon-pink) 55%, #c4005c);
+  box-shadow: 0 5px 0 #7a0039, 0 8px 18px rgba(255, 46, 136, 0.35);
+}
+
+.btn-pink:active {
+  box-shadow: 0 1px 0 #7a0039;
+}
+
+.btn-yellow {
+  color: #2a1d00;
+  background: linear-gradient(180deg, #fff3a6, var(--neon-yellow) 55%, #e0b400);
+  box-shadow: 0 5px 0 #7a6100, 0 8px 18px rgba(255, 225, 77, 0.35);
+}
+
+.btn-yellow:active {
+  box-shadow: 0 1px 0 #7a6100;
+}
+
+.btn-ghost {
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  box-shadow: 0 4px 0 rgba(10, 6, 40, 0.9);
+}
+
+.btn-ghost:active {
+  box-shadow: 0 0 0 rgba(10, 6, 40, 0.9);
+}
+
+.loading {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 18px;
+  min-height: 100dvh;
+  font-family: var(--font-display);
+  color: var(--text-dim);
+  letter-spacing: 0.2em;
+}
+
+.loading::before {
+  content: '';
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  border: 5px solid rgba(0, 229, 255, 0.15);
+  border-top-color: var(--neon-cyan);
+  border-right-color: var(--neon-pink);
+  animation: spin 0.8s linear infinite;
+  filter: drop-shadow(0 0 8px var(--neon-cyan));
+}
+
+.page-enter {
+  animation: rise-in 0.28s ease-out both;
+}

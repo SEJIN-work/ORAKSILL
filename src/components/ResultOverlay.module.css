@@ -1,0 +1,220 @@
+.wrap {
+  position: relative;
+  height: 100%;
+  overflow-y: auto;
+  display: flex;
+  justify-content: center;
+  padding: 10px 4px 16px;
+}
+
+.win {
+  background: radial-gradient(ellipse at 50% 20%, rgba(57, 255, 136, 0.18), transparent 60%);
+}
+
+.lose {
+  background: radial-gradient(ellipse at 50% 20%, rgba(255, 77, 109, 0.16), transparent 60%);
+}
+
+.card {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  margin: auto 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  animation: card-in 0.45s cubic-bezier(0.2, 1.3, 0.4, 1) both;
+}
+
+@keyframes card-in {
+  from {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+.stageLabel {
+  margin: 0;
+  padding: 2px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  letter-spacing: 0.3em;
+  color: var(--text-dim);
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(3rem, 14vw, 4.6rem);
+  line-height: 1;
+  animation: title-slam 0.5s cubic-bezier(0.2, 1.5, 0.4, 1) both;
+}
+
+.win .title {
+  color: #fff;
+  text-shadow: 0 0 4px #fff, 0 0 14px var(--neon-green), 0 0 36px var(--neon-green), 0 6px 0 #0a5c33;
+}
+
+.lose .title {
+  color: #fff;
+  text-shadow: 0 0 4px #fff, 0 0 14px var(--neon-red), 0 0 36px var(--neon-red), 0 6px 0 #5c0a1c;
+}
+
+@keyframes title-slam {
+  from {
+    transform: scale(2.4) rotate(-6deg);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+.sub {
+  margin: 0;
+  color: var(--text-dim);
+}
+
+.stars {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 92px;
+}
+
+.star {
+  font-size: 4rem;
+  line-height: 1;
+  color: #2a2456;
+  text-shadow: 0 4px 0 #120e33;
+}
+
+.starMid {
+  font-size: 5.2rem;
+}
+
+.starOn {
+  color: var(--neon-yellow);
+  text-shadow: 0 0 6px #fff, 0 0 18px var(--neon-yellow), 0 0 40px var(--neon-orange), 0 5px 0 #8a6a00;
+  animation: pop-in 0.42s cubic-bezier(0.2, 1.6, 0.4, 1) both;
+}
+
+.coinBox {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 24px 8px 10px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(60, 44, 0, 0.9), rgba(28, 20, 0, 0.9));
+  border: 2px solid rgba(255, 225, 77, 0.6);
+  box-shadow: 0 0 22px rgba(255, 225, 77, 0.25);
+}
+
+.coinDone {
+  animation: coin-done 0.5s ease-out;
+}
+
+@keyframes coin-done {
+  40% {
+    transform: scale(1.18);
+    box-shadow: 0 0 40px rgba(255, 225, 77, 0.8);
+  }
+}
+
+.coinIcon {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff7c2, #ffd23f 45%, #c48a00);
+  box-shadow: 0 0 0 3px #8a5c00 inset, 0 0 14px rgba(255, 210, 63, 0.9);
+  animation: coin-flip 1.2s linear infinite;
+}
+
+@keyframes coin-flip {
+  to {
+    transform: rotateY(360deg);
+  }
+}
+
+.coinValue {
+  font-family: var(--font-display);
+  font-size: 2.3rem;
+  color: var(--neon-yellow);
+  text-shadow: 0 0 10px rgba(255, 225, 77, 0.7);
+  font-variant-numeric: tabular-nums;
+  min-width: 3ch;
+}
+
+.note {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+.record {
+  margin: 0;
+  font-family: var(--font-display);
+  color: var(--neon-yellow);
+  animation: pop-in 0.5s 1.6s both;
+}
+
+.details {
+  width: 100%;
+  margin: 4px 0 0;
+  padding: 12px 14px 12px 32px;
+  border-radius: var(--radius);
+  background: rgba(10, 8, 34, 0.75);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  animation: rise-in 0.4s 0.4s both;
+}
+
+.details li::marker {
+  color: var(--neon-cyan);
+}
+
+.actions {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 6px;
+  animation: rise-in 0.4s 0.5s both;
+}
+
+.wide {
+  grid-column: 1 / -1;
+}
+
+.confetti {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.confetti span {
+  position: absolute;
+  top: -20px;
+  left: var(--x);
+  width: 10px;
+  height: 16px;
+  border-radius: 2px;
+  transform: rotate(var(--r));
+  animation: confetti-fall 2.6s var(--d) ease-in both;
+}
+
+@keyframes confetti-fall {
+  to {
+    transform: translate(40px, 110vh) rotate(calc(var(--r) + 720deg));
+    opacity: 0.6;
+  }
+}

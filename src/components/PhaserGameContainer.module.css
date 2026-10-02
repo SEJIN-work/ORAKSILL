@@ -1,0 +1,9 @@
+.container {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  /* Stop touch gestures (scroll / pinch / pull-to-refresh) from stealing swipes and taps. */
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
